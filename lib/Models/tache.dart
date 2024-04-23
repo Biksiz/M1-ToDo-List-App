@@ -1,5 +1,3 @@
-import 'package:uuid/uuid.dart';
-
 class Tache{
   
   String id;
@@ -12,6 +10,7 @@ class Tache{
   bool terminee;
 
   Tache({
+    required this.id,
     required this.titre,
     required this.dateModification,
     this.description,
@@ -19,7 +18,7 @@ class Tache{
     this.adresse,
     this.importance = false,
     this.terminee = false,
-  }) : id = const Uuid().v4();
+  });
 
   // Convertit une tâche en Map
   Map<String, dynamic> toMap() {

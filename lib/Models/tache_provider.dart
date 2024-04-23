@@ -5,7 +5,7 @@ import 'package:todo_list_app/Models/tache.dart';
 
 class TacheProvider extends ChangeNotifier {
   // Liste des tâches
-  final List<Tache> _taches = [];
+  List<Tache> _taches = [];
 
   // Base de données
   Database? _db;
@@ -126,11 +126,42 @@ class TacheProvider extends ChangeNotifier {
   }
 
   // Retourne la liste des tâches actives
-  List<Tache> get tachesActives => _taches.where(_isTacheActive).toList();
+  Future<List<Tache>> getTachesActives() async {
+    return (await getTaches()).where(_isTacheActive).toList();
+  }
 
   // Retourne la liste des tâches terminées
-  List<Tache> get tachesTerminees => _taches.where(_isTacheTerminee).toList();
+  Future<List<Tache>> getTachesTerminees() async {
+    return (await getTaches()).where(_isTacheTerminee).toList();
+  }
 
-  // Retourne la liste des tâches
-  List<Tache> get taches => _taches;
+  // Charge les tâches depuis la base de données
+  Future<List<Tache>> getTaches() async {
+
+    if (_taches.isNotEmpty) {
+      return _taches;
+    }
+
+    await initDB();
+
+    // Charge les tâches depuis la base de données
+    List<Map<String, dynamic>> taches = await _db!.query('taches');
+
+    // Convertit les tâches en objets Tache
+    _taches = [
+      for (final {'id' : id as String, 'titre' : titre as String, 'dateModification' : dateModification as String, 'description' : description as String?, 'dateEcheance' : dateEcheance as String?, 'adresse' : adresse as String?, 'importance' : importance as int, 'terminee' : terminee as int} in taches)
+        Tache(
+          id: id,
+          titre: titre,
+          dateModification: dateModification,
+          description: description,
+          dateEcheance: dateEcheance,
+          adresse: adresse,
+          importance: importance == 1,
+          terminee: terminee == 1
+        ),
+    ];
+
+    return _taches;
+  }
 }

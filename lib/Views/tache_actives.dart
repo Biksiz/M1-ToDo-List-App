@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:uuid/uuid.dart';
 import 'package:todo_list_app/Models/tache.dart';
 import 'package:todo_list_app/Models/tache_provider.dart';
 import 'package:provider/provider.dart';
@@ -62,105 +63,121 @@ class _TacheActivesScreenState extends State<TacheActivesScreen> {
       body: Consumer<TacheProvider>( // Ecoute les changements dans TacheProvider
         builder: (context, tacheProvider, child) {
 
-          // Si la liste des tâches actives est vide
-          if (tacheProvider.tachesActives.isEmpty) {
-            return Center(
-              child: Text('Aucune tâche active', style: GoogleFonts.roboto(color: Colors.purple, fontSize: 24.0, fontWeight: FontWeight.bold)),
-            );
-          }
+          return FutureBuilder<List<Tache>>(
+            future: tacheProvider.getTachesActives(),
+            builder: (context, snapshot) {
 
-          // Liste des tâches actives
-          return ListView.builder(
-            itemCount: tacheProvider.tachesActives.length,
-            itemBuilder: (context, index) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
 
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Dismissible(
-                  key: Key(tacheProvider.tachesActives[index].id),
+                // Afficher un cercle de chargement si les favoris sont en cours de chargement
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  child: CircularProgressIndicator(),
+                );
 
-                  // Fond lorsqu'on swipe à droite
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerLeft,
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(Icons.delete, color: Colors.white),
-                    ),
-                  ),
+              }
 
-                  // Fond lorsqu'on swipe à gauche
-                  secondaryBackground: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(Icons.delete, color: Colors.white),
-                    ),
-                  ),
+              // Si la liste des tâches actives est vide
+              if (snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text('Aucune tâche active', style: GoogleFonts.roboto(color: Colors.purple, fontSize: 24.0, fontWeight: FontWeight.bold)),
+                );
+              }
 
-                  onDismissed: (direction) {
-                    // Supprime la tâche lorsqu'il y a un swipe
-                    tacheProvider.removeTache(tacheProvider.tachesActives[index]);
+              // Liste des tâches actives
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
 
-                    // Affiche un SnackBar pour confirmer la suppression
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: Colors.red,
-                        content: Text('Tâche supprimée avec succès',
-                          style: GoogleFonts.roboto(color: Colors.white),
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Dismissible(
+                      key: Key(snapshot.data![index].id),
+
+                      // Fond lorsqu'on swipe à droite
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerLeft,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(Icons.delete, color: Colors.white),
                         ),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-
-                  child: Card(
-                    color: Colors.purpleAccent.withOpacity(0.2),
-
-                    child: ListTile(
-                      title: Text(
-                        tacheProvider.tachesActives[index].titre.length > 40 // Si le titre est plus long que 40 caractères alors afficher ...
-                          ? '${tacheProvider.tachesActives[index].titre.substring(0, 40)}...'
-                          : tacheProvider.tachesActives[index].titre, 
-                        style: GoogleFonts.acme(fontWeight: FontWeight.bold),
                       ),
 
-                      // Date d'écheance affichée si elle existe sinon affiche "Pas de date"
-                      subtitle: Text("Date d'échéance: ${tacheProvider.tachesActives[index].dateEcheance ?? 'Pas de date'}", style: GoogleFonts.acme()),
-
-                      trailing: IconButton(
-                        icon: Icon(
-                          tacheProvider.tachesActives[index].importance 
-                            ? CupertinoIcons.bookmark_fill 
-                            : CupertinoIcons.bookmark,
-                          color: Colors.black,
+                      // Fond lorsqu'on swipe à gauche
+                      secondaryBackground: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(Icons.delete, color: Colors.white),
                         ),
-                        onPressed: () {
-                          // Change le statut d'importance de la tâche
-                          tacheProvider.updateImportance(tacheProvider.tachesActives[index].id, !tacheProvider.tachesActives[index].importance);
+                      ),
 
-                          // Affiche un SnackBar pour confirmer le changement de statut d'importance
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              backgroundColor: Colors.purple,
-                              content: Text('"${tacheProvider.tachesActives[index].titre}" est ${tacheProvider.tachesActives[index].importance ? 'non importante' : 'importante'}',
-                                style: GoogleFonts.roboto(color: Colors.white),
-                              ),
-                              duration: const Duration(seconds: 2),
+                      onDismissed: (direction) {
+                        // Supprime la tâche lorsqu'il y a un swipe
+                        tacheProvider.removeTache(snapshot.data![index]);
+
+                        // Affiche un SnackBar pour confirmer la suppression
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: Colors.red,
+                            content: Text('Tâche supprimée avec succès',
+                              style: GoogleFonts.roboto(color: Colors.white),
                             ),
-                          );
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
 
-                        },
+                      child: Card(
+                        color: Colors.purpleAccent.withOpacity(0.2),
+
+                        child: ListTile(
+                          title: Text(
+                            snapshot.data![index].titre.length > 40 // Si le titre est plus long que 40 caractères alors afficher ...
+                              ? '${snapshot.data![index].titre.substring(0, 40)}...'
+                              : snapshot.data![index].titre, 
+                            style: GoogleFonts.acme(fontWeight: FontWeight.bold),
+                          ),
+
+                          // Date d'écheance affichée si elle existe sinon affiche "Pas de date"
+                          subtitle: Text("Date d'échéance: ${snapshot.data![index].dateEcheance ?? 'Pas de date'}", style: GoogleFonts.acme()),
+
+                          trailing: IconButton(
+                            icon: Icon(
+                              snapshot.data![index].importance 
+                                ? CupertinoIcons.bookmark_fill 
+                                : CupertinoIcons.bookmark,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              // Change le statut d'importance de la tâche
+                              tacheProvider.updateImportance(snapshot.data![index].id, !snapshot.data![index].importance);
+
+                              // Affiche un SnackBar pour confirmer le changement de statut d'importance
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: Colors.purple,
+                                  content: Text('"${snapshot.data![index].titre}" est ${snapshot.data![index].importance ? 'non importante' : 'importante'}',
+                                    style: GoogleFonts.roboto(color: Colors.white),
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+
+                            },
+                          ),
+                        ),
                       ),
+
                     ),
-                  ),
+                  );
 
-                ),
+                },
               );
-
             },
-          );
+          );  
 
         },
       ),
@@ -229,6 +246,7 @@ class _TacheActivesScreenState extends State<TacheActivesScreen> {
 
                       // Créer une tâche
                       Tache tache = Tache(
+                        id : const Uuid().v4(),
                         titre: _taskController.text,
                         dateModification: DateTime.now().toString(),
                       );
