@@ -16,7 +16,7 @@ class TacheActivesScreen extends StatefulWidget {
 
 class _TacheActivesScreenState extends State<TacheActivesScreen> {
   // Valeur actuelle du dropdown de tri
-  String? dropdownValue = 'Trier: Alphabetique';
+  String? dropdownValue = 'Trier: Importance';
 
   // Controller pour le champ de texte de la tâche
   final TextEditingController _taskController = TextEditingController();
@@ -47,7 +47,7 @@ class _TacheActivesScreenState extends State<TacheActivesScreen> {
               },
 
               // Liste des items
-              items: <String>['Trier: Alphabetique', 'Trier: Date d\'échéance', 'Trier: Importance']
+              items: <String>['Trier: Importance', 'Trier: Date d\'échéance']
                 .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>( // Item du dropdown
                     value: value,
@@ -63,8 +63,19 @@ class _TacheActivesScreenState extends State<TacheActivesScreen> {
       body: Consumer<TacheProvider>( // Ecoute les changements dans TacheProvider
         builder: (context, tacheProvider, child) {
 
+          // Variable pour stocker la méthode de tri
+          Function(List<Tache>) methodeTrie = tacheProvider.triParDefaut;
+
+          // Si la valeur du dropdown est 'Trier: Importance' alors trier par importance sinon trier par date d'échéance
+          if (dropdownValue == 'Trier: Importance') {
+            methodeTrie = tacheProvider.triParDefaut;
+          } else {
+            // Tri par date d'échéance puis par date de modification en cas d'égalité
+            methodeTrie = tacheProvider.triParDateEcheance;
+          }
+
           return FutureBuilder<List<Tache>>(
-            future: tacheProvider.getTachesActives(),
+            future: tacheProvider.getTachesActives(methodeTrie), //dropdownValue
             builder: (context, snapshot) {
 
               if (snapshot.connectionState == ConnectionState.waiting) {

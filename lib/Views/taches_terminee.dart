@@ -14,7 +14,7 @@ class TacheTermineeScreen extends StatefulWidget {
 }
 
 class _TacheTermineeScreenState extends State<TacheTermineeScreen> {
-  String? dropdownValue = 'Trier: Alphabetique';
+  String? dropdownValue = 'Trier: Importance';
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class _TacheTermineeScreenState extends State<TacheTermineeScreen> {
               },
 
               // Liste des items
-              items: <String>['Trier: Alphabetique', 'Trier: Date d\'échéance', 'Trier: Importance']
+              items: <String>['Trier: Importance', 'Trier: Date d\'échéance']
                 .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>( // Item du dropdown
                     value: value,
@@ -58,8 +58,19 @@ class _TacheTermineeScreenState extends State<TacheTermineeScreen> {
       body: Consumer<TacheProvider>( // Ecoute les changements dans TacheProvider
         builder: (context, tacheProvider, child) {
 
+          // Variable pour stocker la méthode de tri
+          Function(List<Tache>) methodeTrie = tacheProvider.triParDefaut;
+
+          // Si la valeur du dropdown est 'Trier: Importance' alors trier par importance sinon trier par date d'échéance
+          if (dropdownValue == 'Trier: Importance') {
+            methodeTrie = tacheProvider.triParDefaut;
+          } else {
+            // Tri par date d'échéance puis par date de modification en cas d'égalité
+            methodeTrie = tacheProvider.triParDateEcheance;
+          }
+
           return FutureBuilder<List<Tache>>(
-            future: tacheProvider.getTachesTerminees(),
+            future: tacheProvider.getTachesTerminees(methodeTrie),
             builder: (context, snapshot) {
 
               if (snapshot.connectionState == ConnectionState.waiting) {

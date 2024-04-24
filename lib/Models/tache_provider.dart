@@ -125,14 +125,14 @@ class TacheProvider extends ChangeNotifier {
     return tache.terminee;
   }
 
-  // Retourne la liste des tâches actives
-  Future<List<Tache>> getTachesActives() async {
-    return (await getTaches()).where(_isTacheActive).toList();
+  // Retourne la liste des tâches actives triée selon la méthode de tri spécifiée
+  Future<List<Tache>> getTachesActives(Function(List<Tache>) methodeTrie) async {
+    return methodeTrie((await getTaches()).where(_isTacheActive).toList());
   }
 
-  // Retourne la liste des tâches terminées
-  Future<List<Tache>> getTachesTerminees() async {
-    return (await getTaches()).where(_isTacheTerminee).toList();
+  // Retourne la liste des tâches terminées triée selon la méthode de tri spécifiée
+  Future<List<Tache>> getTachesTerminees(Function(List<Tache>) methodeTrie) async {
+    return methodeTrie((await getTaches()).where(_isTacheTerminee).toList());
   }
 
   // Charge les tâches depuis la base de données
@@ -163,5 +163,57 @@ class TacheProvider extends ChangeNotifier {
     ];
 
     return _taches;
+  }
+
+  // Trie par importance puis par date de modification
+  List<Tache> triParDefaut(List<Tache> taches) {
+    taches.sort((a, b) {
+
+      // Si les deux tâches ont la même importance, on les trie par date de modification
+      if (a.importance == b.importance) {
+        return DateTime.parse(b.dateModification).compareTo(DateTime.parse(a.dateModification));
+      } 
+
+      // Sinon, on trie par importance
+      else {
+        return a.importance ? -1 : 1;
+      }
+    });
+
+    return taches;
+  }
+
+  // Trie par date d'échéance puis par date de modification en cas d'égalité
+  List<Tache> triParDateEcheance(List<Tache> taches) {
+    taches.sort((a, b) {
+
+      // Si les deux tâches ont une date d'échéance, on les trie par date d'échéance
+      if (a.dateEcheance != null && b.dateEcheance != null) {
+
+        // Nos dates convertient en DateTime
+        var dateA = DateTime.parse(a.dateEcheance!);
+        var dateB = DateTime.parse(b.dateEcheance!);
+
+        // Si les deux dates d'échéance sont égales, on les trie par date de modification
+        if (dateA == dateB) {
+          return DateTime.parse(b.dateModification).compareTo(DateTime.parse(a.dateModification));
+        } 
+        else {
+          return dateB.compareTo(dateA);
+        }
+      } 
+
+      // Si une des tâches n'a pas de date d'échéance, on la met en dernier
+      else if (a.dateEcheance == null && b.dateEcheance == null) {
+        return DateTime.parse(b.dateModification).compareTo(DateTime.parse(a.dateModification));
+      }
+
+      // Si la tâche A n'a pas de date d'échéance, on la met en dernier
+      else {
+        return a.dateEcheance == null ? 1 : -1;
+      }
+    });
+
+    return taches;
   }
 }
