@@ -12,9 +12,13 @@ class TacheProvider extends ChangeNotifier {
 
   // Initialise la base de données
   Future initDB() async {
+
+    // Si la base de données est déjà initialisée, on la retourne
     if (_db != null) {
       return _db;
     }
+
+    // Sinon, on initialise la base de données
     try {
       String path = join(await getDatabasesPath(), 'taches.db');
       _db = await openDatabase(path, version: 1, onCreate: (Database db, int version) async {
@@ -57,10 +61,13 @@ class TacheProvider extends ChangeNotifier {
   // Supprime une tâche
   Future<void> removeTache(Tache tache) async {
     await initDB();
+
+    // Supprime la tâche de la liste _taches
     _taches.remove(tache);
 
     // Supprime la tâche de la base de données et si elle n'existe pas, ne fait rien
     await _db?.delete('taches', where: 'id = ?', whereArgs: [tache.id]);
+
     notifyListeners();
   }
 
@@ -73,6 +80,8 @@ class TacheProvider extends ChangeNotifier {
 
     // Verifie si la tâche existe
     if (index != -1) {
+
+      // Met à jour la tâche dans la liste _taches
       _taches[index] = tache;
       
       // Met à jour la tâche dans la base de données et si elle n'existe pas, ne fait rien
@@ -85,15 +94,18 @@ class TacheProvider extends ChangeNotifier {
   Future<void> updateImportance(String id, bool importance) async {
     await initDB();
 
-    // Met à jour la tâche dans la liste _taches
+    // Recupère l'indice de la tâche dans la liste _taches
     int index = _taches.indexWhere((t) => t.id == id);
 
     // Verifie si la tâche existe
     if (index != -1) {
+
+      // Met à jour la tâche dans la liste _taches
       _taches[index].importance = importance;
 
       // Met à jour la tâche dans la base de données et si elle n'existe pas, ne fait rien
       await _db?.update('taches', {'importance': importance}, where: 'id = ?', whereArgs: [id]);
+
       notifyListeners();
     }
   }
@@ -102,7 +114,7 @@ class TacheProvider extends ChangeNotifier {
   Future<void> updateTerminee(String id, bool terminee) async {
     await initDB();
 
-    // Met à jour la tâche dans la liste _taches
+    // Recupère l'indice de la tâche dans la liste _taches
     int index = _taches.indexWhere((t) => t.id == id);
 
     // Verifie si la tâche existe
@@ -111,6 +123,7 @@ class TacheProvider extends ChangeNotifier {
 
       // Met à jour la tâche dans la base de données et si elle n'existe pas, ne fait rien
       await _db?.update('taches', {'terminee': terminee}, where: 'id = ?', whereArgs: [id]);
+
       notifyListeners();
     }
   }

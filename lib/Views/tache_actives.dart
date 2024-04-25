@@ -31,7 +31,7 @@ class _TacheActivesScreenState extends State<TacheActivesScreen> {
 
           // DropdownButton pour trier les tâches
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: DropdownButton<String>(
               // Valeur par défaut
               value: dropdownValue,
@@ -69,7 +69,8 @@ class _TacheActivesScreenState extends State<TacheActivesScreen> {
           // Si la valeur du dropdown est 'Trier: Importance' alors trier par importance sinon trier par date d'échéance
           if (dropdownValue == 'Trier: Importance') {
             methodeTrie = tacheProvider.triParDefaut;
-          } else {
+          } 
+          else {
             // Tri par date d'échéance puis par date de modification en cas d'égalité
             methodeTrie = tacheProvider.triParDateEcheance;
           }
