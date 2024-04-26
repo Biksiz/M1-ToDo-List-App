@@ -121,20 +121,78 @@ class _TacheTermineeScreenState extends State<TacheTermineeScreen> {
                         ),
                       ),
 
-                      onDismissed: (direction) {
-                        // Supprime la tâche lorsqu'il y a un swipe
-                        tacheProvider.removeTache(snapshot.data![index]);
+                      // Lorsqu'on swipe pour supprimer une tâche on s'assure que la suppression est souhaitée
+                      confirmDismiss: (direction) async {
 
-                        // Affiche un SnackBar pour confirmer la suppression
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: Colors.red,
-                            content: Text('Tâche supprimée avec succès',
-                              style: GoogleFonts.roboto(color: Colors.white),
-                            ),
-                            duration: const Duration(seconds: 2),
-                          ),
+                        // AlertDialog pour la confirmation de la suppression
+                        return await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+
+                            return AlertDialog(
+
+                              title: Text('Êtes-vous sûr de vouloir supprimer cette tâche ?',
+                                style: GoogleFonts.racingSansOne(color: Colors.purple),
+                                textAlign: TextAlign.center,
+                              ),
+
+                              actions: <Widget>[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    
+                                    // Bouton pour annuler
+                                    ElevatedButton(
+                                      style: ButtonStyle(
+                                        backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                                        foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                      ),
+                                      child: const Text('Annuler'),
+                                      onPressed: () {
+                                    
+                                        // Ferme l'AlertDialog et indique que la tâche n'a pas été supprimée
+                                        Navigator.of(context).pop(false);
+                                    
+                                      },
+                                    ),
+
+
+                                    // Bouton pour confirmer la suppression
+                                    ElevatedButton(
+                                    style: ButtonStyle(
+                                        backgroundColor: MaterialStateProperty.all<Color>(Colors.purple),
+                                        foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                                      ),
+                                      child: const Text('Confirmer'),
+                                      onPressed: () {
+
+                                        // Supprime la tâche
+                                        tacheProvider.removeTache(snapshot.data![index]);
+
+                                        // Ferme l'AlertDialog et indique que la tâche a été supprimée
+                                        Navigator.of(context).pop(true);
+
+                                        // Affiche un SnackBar pour confirmer la suppression
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            backgroundColor: Colors.red,
+                                            content: Text('Tâche supprimée avec succès',
+                                              style: GoogleFonts.roboto(color: Colors.white),
+                                            ),
+                                            duration: const Duration(seconds: 2),
+                                          ),
+                                        );
+                                        
+                                      },
+                                    ),
+
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
                         );
+
                       },
 
                       child: Card(
