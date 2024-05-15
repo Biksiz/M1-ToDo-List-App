@@ -1,8 +1,8 @@
 class Tache{
   
   String id;
-  final String titre;
-  final String dateModification;
+  String titre;
+  String dateModification;
   String? description;
   String? dateEcheance;
   String? adresse;

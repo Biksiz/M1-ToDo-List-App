@@ -148,6 +148,10 @@ class TacheProvider extends ChangeNotifier {
     return methodeTrie((await getTaches()).where(_isTacheTerminee).toList());
   }
 
+  Tache getTache(String id) {
+    return _taches.firstWhere((t) => t.id == id);
+  }
+
   // Charge les tâches depuis la base de données
   Future<List<Tache>> getTaches() async {
 

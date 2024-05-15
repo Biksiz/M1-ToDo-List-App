@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_list_app/Models/tache.dart';
 import 'package:todo_list_app/Models/tache_provider.dart';
+import 'package:todo_list_app/Views/tache_details.dart';
 
 class TacheTermineeScreen extends StatefulWidget {
   const TacheTermineeScreen({super.key});
@@ -233,6 +234,13 @@ class _TacheTermineeScreenState extends State<TacheTermineeScreen> {
 
                             },
                           ),
+                          onTap: () {
+                            // Naviguer vers la page de détails avec les données de la tâche
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TacheDetailsPage(tache: snapshot.data![index])),
+                            );
+                          },
                         ),
                       ),
 

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:todo_list_app/Views/tache_details.dart';
 import 'package:uuid/uuid.dart';
 import 'package:todo_list_app/Models/tache.dart';
 import 'package:todo_list_app/Models/tache_provider.dart';
@@ -238,6 +239,13 @@ class _TacheActivesScreenState extends State<TacheActivesScreen> {
 
                             },
                           ),
+                          onTap: () {
+                            // Naviguer vers la page de détails avec les données de la tâche
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TacheDetailsPage(tache: snapshot.data![index])),
+                            );
+                          },
                         ),
                       ),
 
